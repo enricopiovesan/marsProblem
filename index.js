@@ -22,24 +22,80 @@ const DIRECTIONS_REVERSE = {
   4: "W"
 }
 
+class Grid {
+  
+  constructor(x,y) {
+    try {
+      if (x >= 1 || y >= 1) {
+        this.upperX = x;
+        this.upperY = y;     
+      } else {
+        throw new Error("Grid must be initializated with positive values.");
+      }
+    } catch(e) {
+      console.error(e); 
+    }
+      
+  }
+  
+  isThepointInsideTheGrid(x,y) {
+    if (x < 0 || y < 0) {
+      return false;
+    }
+    
+    if (x > this.upperX - 1 || y > this.upperY - 1) {
+      return false;
+    }
+    
+    return true;
+      
+  }
+  
+}
+
 class Rover {
   
-  constructor() {
+  constructor(gird) {
     this.facing = DIRECTIONS.N;
     this.y = 0;
     this.x = 0;
+    this.grid = grid;
   }
   
   setPosition(x,y) {
-    this.x = Number(x);
-    this.y = Number(y);
+    try {
+      if(this.grid.isThepointInsideTheGrid(x, y)) {
+        this.x = Number(x);
+        this.y = Number(y);
+      } else {
+        throw new Error("Rover is trying to set an invalid position.", x, y);
+      }
+    } catch(e) {
+      console.error(e);
+    }
   }
   
   setX(x) {
-    this.x = Number(x);
+    try {
+      if(this.grid.isThepointInsideTheGrid(x, this.y)) {
+        this.x = Number(x);
+      } else {
+        throw new Error("Rover is trying to set an invalid X: " + x);
+      }
+    } catch(e) {
+      console.error(e);
+    }
   }
   setY(y) {
-    this.y = Number(y)
+    try {
+      if(this.grid.isThepointInsideTheGrid(this.x, y)) {
+        this.y = Number(y);
+      } else {
+        throw new Error("Rover is trying to set an invalid Y: " + y);
+    }
+    } catch(e) {
+      console.error(e);
+    }
   }
   
   processCommand(command) {
@@ -55,7 +111,7 @@ class Rover {
         this.move();
         break;
       default:
-        console.error("Please provide a valid command: L left, R right, M move. ", command, " is not valid.");
+        throw new Error("Please provide a valid command: L left, R right, M move. ", command, " is not valid.");
         break;
     }
   }
@@ -129,11 +185,13 @@ class Rover {
 
 // APP ///////////////
 
-const rover1 = new Rover();
+const grid = new Grid(6,6);
+
+const rover1 = new Rover(grid);
 rover1.positionInput("1 2 N");
 rover1.movementInput("LMLMLMLMM");
 
-const rover2 = new Rover();
+const rover2 = new Rover(grid);
 rover2.positionInput("3 3 E");
 rover2.movementInput("MMRMMRMRRM");
 
@@ -142,7 +200,23 @@ rover2.movementInput("MMRMMRMRRM");
 
 mocha.suite.emit('pre-require', this, 'solution', mocha);
 
-describe('is the rover into the right position and direction', () => {
+describe('is the grid working properly', () => {
+  
+  it('is a point inside or outside the grid ', () => {
+    
+    const grid = new Grid(10,10);
+    expect(grid.isThepointInsideTheGrid(10,10)).to.equal(false);
+    expect(grid.isThepointInsideTheGrid(9,9)).to.equal(true);
+    expect(grid.isThepointInsideTheGrid(0,0)).to.equal(true);
+    expect(grid.isThepointInsideTheGrid(5,5)).to.equal(true);
+    expect(grid.isThepointInsideTheGrid(-1,-1)).to.equal(false);
+    expect(grid.isThepointInsideTheGrid(-1,3)).to.equal(false);
+
+  });
+     
+});
+
+describe('is the rover working properly', () => {
   
   it('is into correct initial', () => {
     const rover = new Rover();
